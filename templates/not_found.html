@@ -1,0 +1,8 @@
+{# base.html의 틀을 물려받는다 (그래서 메뉴와 바닥 글씨도 그대로 보인다) #}
+{% extends "base.html" %}
+{% block title %}찾는 페이지가 없어요{% endblock %}
+{% block content %}
+<h1>찾는 페이지가 없어요</h1>
+{# 길을 잃은 손님이 갈 수 있는 곳: 클래스 목록 #}
+<p><a href="{{ url_for('class_list') }}">클래스 목록 보기</a></p>
+{% endblock %}

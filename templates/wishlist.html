@@ -1,0 +1,51 @@
+{# base.html의 틀을 물려받는다 #}
+{% extends "base.html" %}
+{# 공통 조각(썸네일 · 가격 · 평점)을 가져온다. 클래스 목록 화면과 같은 조각이라 모양이 똑같다 #}
+{% from "_macros.html" import thumb, price, rating %}
+{% block title %}찜 목록{% endblock %}
+{% block content %}
+{# 현재 위치: 누르면 홈으로 돌아간다 (클래스 목록 화면과 같은 모양) #}
+<nav class="crumb" aria-label="현재 위치">
+  <a href="{{ url_for('home') }}">클래스로</a>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+  <h1>찜 목록</h1>
+</nav>
+
+{% if classes %}
+{# 찜한 개수 #}
+<p class="result-count">{{ classes|length }}개의 클래스</p>
+
+{# 클래스 목록 화면의 '리스트형'과 같은 모양으로 보여 준다. 가장 나중에 찜한 클래스가 위에 온다 #}
+<ul class="items view-list wish-items">
+  {# 클래스를 하나씩 만든다 #}
+  {% for c in classes %}
+  <li class="item">
+    {{ thumb(c.name) }}
+    <div class="item-body">
+      {# 카테고리 · 지역 #}
+      <p class="meta">{{ c.category }} · {{ c.region }}</p>
+      {# 클래스 이름: 누르면 상세 화면(/class/번호)으로 간다 #}
+      <h2 class="item-title"><a href="{{ url_for('class_detail', class_id=c.id) }}">{{ c.name }}</a></h2>
+      {{ rating(c) }}
+    </div>
+    <div class="item-foot">
+      {{ price(c, 'item-price') }}
+      {# 찜 취소: 값을 바꾸는 일이라 method="post"(봉투)다. 상세 화면의 버튼과 같은 주소(/class/번호/wish)로 보낸다 #}
+      <form class="wish-form" method="post" action="{{ url_for('toggle_wish', class_id=c.id) }}">
+        {# 숨은 칸: "이 요청은 찜 목록 화면에서 왔어요"라고 알려서, 취소한 뒤 찜 목록 화면으로 돌아오게 한다 #}
+        <input type="hidden" name="from" value="wishlist">
+        {# 버튼 글자는 모두 같아서, 스크린리더는 aria-label로 "어느 클래스의 찜 취소인지" 읽어 준다. 하트는 장식이다 #}
+        <button class="wish-btn" type="submit" aria-label="{{ c.name }} 찜 취소">
+          <span class="wish-heart" aria-hidden="true">♥</span> 찜 취소
+        </button>
+      </form>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+{# 찜한 클래스가 하나도 없을 때: 안내 문구와, 클래스를 둘러보러 가는 링크 #}
+<p class="empty">아직 찜한 클래스가 없어요</p>
+<p><a href="{{ url_for('class_list') }}">클래스 둘러보기</a></p>
+{% endif %}
+{% endblock %}

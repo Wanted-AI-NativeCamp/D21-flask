@@ -1,0 +1,116 @@
+{# base.html의 틀을 물려받는다 #}
+{% extends "base.html" %}
+{% block title %}{{ item.name }}{% endblock %}
+{% block content %}
+{# 이 클래스와 같은 카테고리의 목록으로 돌아가는 링크. 카테고리가 비어 있으면 거르지 않은 전체 목록으로 간다 #}
+<p><a href="{{ url_for('class_list', category=item.category or none) }}">← 카테고리 목록</a></p>
+
+{# 목록의 카드와 같은 모양(.card)으로 클래스 한 개를 보여 준다 #}
+<article class="card">
+  {# 카테고리 · 지역 #}
+  <p class="meta">{{ item.category }} · {{ item.region }}</p>
+  {# 클래스 이름: 이 화면의 제목이라 h1이다 #}
+  <h1>{{ item.name }}</h1>
+  {# 가격: 목록과 똑같이. 판매가가 비어 있으면 '가격 문의', 있으면 쉼표를 붙이고, 할인 중이면 정가에 취소선 #}
+  <p class="price">
+    {% if item.sale_price is none %}
+    <span class="muted">가격 문의</span>
+    {% else %}
+    {% if item.on_sale %}<s class="list-price">{{ "{:,}".format(item.list_price) }}원</s>{% endif %}
+    <strong>{{ "{:,}".format(item.sale_price) }}원</strong>
+    {% endif %}
+  </p>
+  {# 평점: 목록과 똑같이. 비어 있으면 안내 문구, 있으면 별과 숫자, 리뷰 수는 1개 이상일 때만 괄호로 #}
+  <p class="rating">
+    {% if item.rating is none %}
+    <span class="muted">아직 리뷰가 없어요</span>
+    {% else %}
+    ★ {{ "%.1f"|format(item.rating) }}{% if item.reviews %} ({{ item.reviews }}){% endif %}
+    {% endif %}
+  </p>
+  {# 찜하기 / 찜 취소: 값을 바꾸는 일이라 method="post"(봉투)다. 주소는 이 클래스의 /class/번호/wish #}
+  <form class="wish-form" method="post" action="{{ url_for('toggle_wish', class_id=item.id) }}">
+    {# 이미 찜했으면 '♥ 찜 취소', 아직이면 '♡ 찜하기'. 하트는 장식이라 스크린리더는 건너뛰고 글자만 읽는다 #}
+    <button class="wish-btn" type="submit">
+      <span class="wish-heart" aria-hidden="true">{% if is_wished %}♥{% else %}♡{% endif %}</span>
+      {% if is_wished %}찜 취소{% else %}찜하기{% endif %}
+    </button>
+  </form>
+</article>
+
+{# 수강 후기 남기기: 봉투(POST)에 담아 같은 주소(이 클래스의 상세 화면)로 보낸다 #}
+<section class="review-section" aria-labelledby="review-form-title">
+  {# 이 칸의 제목 #}
+  <h2 id="review-form-title">수강 후기 남기기</h2>
+
+  {# 저장 성공 안내: 쪽지에 남겨진 안내를 꺼내 보여 준다. 꺼내는 순간 쪽지가 비워져서 새로고침하면 사라진다. role="status"는 스크린리더가 조용히 읽어 주게 한다 #}
+  {% for message in get_flashed_messages() %}
+  <p class="form-success" role="status">{{ message }}</p>
+  {% endfor %}
+
+  {# 틀린 곳이 있을 때만 보인다. role="alert"는 스크린리더가 바로 읽어 주게 한다 #}
+  {% if errors %}
+  <ul class="form-errors" role="alert">
+    {# 틀린 곳을 한 줄씩 보여 준다 #}
+    {% for message in errors %}
+    <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {# method="post"가 봉투 방식이다. action은 이 클래스의 상세 주소(/class/번호)다 #}
+  <form class="review-form" method="post" action="{{ url_for('class_detail', class_id=item.id) }}">
+    {# 닉네임: 이름표(label)는 항상 보이고, for와 id가 짝이다. 틀려서 돌아왔을 때는 쓴 값을 그대로 다시 채운다 #}
+    <div class="field">
+      <label for="nickname">닉네임</label>
+      <input id="nickname" name="nickname" type="text" maxlength="20" required value="{{ form.nickname }}">
+    </div>
+
+    {# 별점: 1~5 중에서 고른다. 틀려서 돌아왔을 때는 고른 점수를 그대로 선택해 둔다 #}
+    <div class="field">
+      <label for="rating">별점</label>
+      <select id="rating" name="rating" required>
+        <option value="">선택하세요</option>
+        {# 1점부터 5점까지 한 줄씩 만든다 #}
+        {% for n in range(1, 6) %}
+        <option value="{{ n }}"{% if form.rating == n|string %} selected{% endif %}>{{ n }}점</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    {# 후기 내용: 여러 줄 입력 칸. 값은 여는 태그와 닫는 태그 사이에 넣는다 #}
+    <div class="field">
+      <label for="content">후기 내용</label>
+      <textarea id="content" name="content" rows="4" maxlength="500" required>{{ form.content }}</textarea>
+    </div>
+
+    {# 저장 버튼: 누르면 위의 세 칸이 봉투에 담겨서 날아간다 #}
+    <button type="submit">후기 남기기</button>
+  </form>
+</section>
+
+{# 이 클래스의 후기 목록 #}
+<section class="review-section" aria-labelledby="review-list-title">
+  {# 이 칸의 제목 #}
+  <h2 id="review-list-title">수강 후기</h2>
+  {% if reviews %}
+  <ul class="reviews">
+    {# DB가 이미 최신순(나중에 남긴 후기가 위)으로 꺼내 주므로, 받은 순서 그대로 한 개씩 보여 준다 #}
+    {% for r in reviews %}
+    <li class="review">
+      {# 닉네임과 별점. 별은 눈으로만 보이고, 스크린리더는 "별점 5점"으로 읽는다 #}
+      <p class="review-head">
+        <strong>{{ r.nickname }}</strong>
+        <span class="star" aria-hidden="true">{{ "★" * r.rating }}</span><span class="sr-only">별점 {{ r.rating }}점</span>
+      </p>
+      {# 후기 내용 #}
+      <p class="review-body">{{ r.content }}</p>
+    </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  {# 후기가 하나도 없을 때의 안내 문구 #}
+  <p class="empty">아직 남겨진 후기가 없어요</p>
+  {% endif %}
+</section>
+{% endblock %}

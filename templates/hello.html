@@ -1,0 +1,7 @@
+{# base.html의 틀을 물려받는다 #}
+{% extends "base.html" %}
+{% block title %}{{ name }} 님 인사{% endblock %}
+{% block content %}
+{# {{ name }}은 app.py에서 보내 준 이름이 들어오는 자리다 (위험한 글자는 자동으로 안전하게 바뀐다) #}
+<h1>안녕하세요, {{ name }} 님!</h1>
+{% endblock %}

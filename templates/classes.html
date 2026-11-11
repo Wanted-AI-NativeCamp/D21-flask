@@ -1,0 +1,87 @@
+{# base.html의 틀을 물려받는다 #}
+{% extends "base.html" %}
+{# 공통 조각(썸네일 · 가격 · 평점)을 가져온다 #}
+{% from "_macros.html" import thumb, price, rating %}
+{% block title %}클래스{% endblock %}
+{% block content %}
+{# 보기 방식: 주소의 ?view= 값이 list(리스트) 또는 tile(타일)이면 그대로, 아니면 card(카드). 링크를 만들 때 쓸 값은 기본값이면 none으로 두어 주소를 짧게 유지한다 #}
+{% set view = request.args.get('view') if request.args.get('view') in ('list', 'tile') else 'card' %}
+{% set view_arg = none if view == 'card' else view %}
+{% set cat_arg = category or none %}
+{% set sort_arg = sort or none %}
+
+{# 현재 위치: 누르면 홈으로 돌아간다 #}
+<nav class="crumb" aria-label="현재 위치">
+  <a href="{{ url_for('home') }}">클래스로</a>
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"></path></svg>
+  <h1>클래스 보기</h1>
+</nav>
+
+{# 카테고리 칩: 가로로 밀어서 넘긴다. 지금 고른 칩에는 aria-current가 붙어 색이 바뀐다. 정렬 · 보기 방식은 칩을 눌러도 유지된다 #}
+<nav class="chip-row" aria-label="카테고리">
+  <a class="cat-chip" href="{{ url_for('class_list', sort=sort_arg, view=view_arg) }}"{% if not category %} aria-current="page"{% endif %}>전체</a>
+  {% for name in categories %}
+  <a class="cat-chip" href="{{ url_for('class_list', category=name, sort=sort_arg, view=view_arg) }}"{% if name == category %} aria-current="page"{% endif %}>{{ name }}</a>
+  {% endfor %}
+</nav>
+
+<div class="toolbar">
+  {# 지금 보이는 클래스 개수 #}
+  <p class="result-count">{{ classes|length }}개의 클래스</p>
+
+  {# 보기 방식 바꾸기: 카드 · 리스트 · 타일. 고른 카테고리와 정렬은 그대로 둔다 #}
+  <nav class="view-switch" aria-label="보기 방식">
+    <a class="view-btn" href="{{ url_for('class_list', category=cat_arg, sort=sort_arg) }}" aria-label="카드형 보기" title="카드형 보기"{% if view == 'card' %} aria-current="true"{% endif %}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="14" height="9" rx="2"></rect><rect x="2" y="13" width="9" height="3" rx="1"></rect></svg>
+    </a>
+    <a class="view-btn" href="{{ url_for('class_list', category=cat_arg, sort=sort_arg, view='list') }}" aria-label="리스트형 보기" title="리스트형 보기"{% if view == 'list' %} aria-current="true"{% endif %}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="4" height="4" rx="1"></rect><rect x="8" y="3" width="8" height="2" rx="1"></rect><rect x="2" y="8" width="4" height="4" rx="1"></rect><rect x="8" y="9" width="8" height="2" rx="1"></rect><rect x="2" y="14" width="4" height="3" rx="1"></rect><rect x="8" y="14.5" width="8" height="2" rx="1"></rect></svg>
+    </a>
+    <a class="view-btn" href="{{ url_for('class_list', category=cat_arg, sort=sort_arg, view='tile') }}" aria-label="타일형 보기" title="타일형 보기"{% if view == 'tile' %} aria-current="true"{% endif %}>
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor" aria-hidden="true"><rect x="2" y="2" width="14" height="14" rx="3"></rect></svg>
+    </a>
+  </nav>
+
+  {# 정렬: 고르면 바로 적용된다. 자바스크립트가 꺼져 있으면 '적용' 버튼이 대신 나온다. 고른 카테고리와 보기 방식은 숨은 칸으로 함께 보낸다 #}
+  <form class="sort" method="get" action="{{ url_for('class_list') }}">
+    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+    {% if view_arg %}<input type="hidden" name="view" value="{{ view_arg }}">{% endif %}
+    <label class="sr-only" for="sort">정렬</label>
+    <select id="sort" name="sort" onchange="this.form.submit()">
+      <option value="">기본 순서</option>
+      <option value="price"{% if sort == "price" %} selected{% endif %}>가격 낮은 순</option>
+      <option value="rating"{% if sort == "rating" %} selected{% endif %}>평점 높은 순</option>
+    </select>
+    <noscript><button type="submit">적용</button></noscript>
+  </form>
+</div>
+
+{% if classes %}
+{# 같은 목록을 view-card · view-list · view-tile 중 하나로 보여 준다. 모양 차이는 CSS가 만든다 #}
+<ul class="items view-{{ view }}">
+  {# 클래스를 하나씩 만든다 #}
+  {% for c in classes %}
+  <li class="item">
+    {{ thumb(c.name) }}
+    <div class="item-body">
+      {# 카테고리 · 지역 #}
+      <p class="meta">{{ c.category }} · {{ c.region }}</p>
+      {# 클래스 이름: 누르면 상세 화면(/class/번호)으로 간다. CSS가 이 링크의 클릭 영역을 카드 전체로 넓혀 준다 #}
+      <h2 class="item-title"><a href="{{ url_for('class_detail', class_id=c.id) }}">{{ c.name }}</a></h2>
+      {{ rating(c) }}
+    </div>
+    <div class="item-foot">
+      {{ price(c, 'item-price') }}
+      {# '자세히' 버튼은 타일형에서만 보인다 #}
+      <a class="btn-detail" href="{{ url_for('class_detail', class_id=c.id) }}" aria-label="{{ c.name }} 자세히 보기">자세히</a>
+    </div>
+  </li>
+  {% endfor %}
+</ul>
+{% else %}
+{# 결과가 0개일 때: 안내 문구와, 조건을 지우고 다시 보는 링크 #}
+<p class="empty">조건에 맞는 클래스가 없어요</p>
+<p><a href="{{ url_for('class_list') }}">조건 지우고 전체 보기</a></p>
+{% endif %}
+
+{% endblock %}

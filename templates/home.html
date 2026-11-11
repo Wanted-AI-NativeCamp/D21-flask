@@ -1,0 +1,17 @@
+{# base.html의 틀을 물려받는다 #}
+{% extends "base.html" %}
+{% block title %}홈{% endblock %}
+{% block content %}
+<h1>클래스로 마켓에 오신 걸 환영해요</h1>
+{# app.py가 보내 준 전체 개수 #}
+<p>전체 클래스 {{ total }}개</p>
+
+{# 카테고리 버튼: 누르면 그 카테고리만 거른 목록(/classes?category=...)으로 간다 #}
+<div class="chips">
+  <a class="chip" href="{{ url_for('class_list') }}">전체 보기</a>
+  {% for name in categories %}
+  {# url_for에 category=를 붙이면 주소 뒤에 ?category=이름 이 자동으로 붙는다 #}
+  <a class="chip" href="{{ url_for('class_list', category=name) }}">{{ name }}</a>
+  {% endfor %}
+</div>
+{% endblock %}

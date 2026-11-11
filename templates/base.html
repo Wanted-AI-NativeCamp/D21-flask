@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# 탭 제목: 앞부분은 각 화면이 채우고, 뒤의 서비스 이름은 여기서 붙인다 #}
+  <title>{% block title %}{% endblock %} · 클래스로 마켓</title>
+  {# url_for('static', ...)는 static 폴더 안의 파일 주소를 대신 만들어 준다 #}
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    {# url_for('home')은 home 함수와 짝인 주소(/)를 대신 만들어 준다 #}
+    <a class="brand" href="{{ url_for('home') }}">클래스로 마켓</a>
+    <nav>
+      <a href="{{ url_for('home') }}">홈</a>
+      <a href="{{ url_for('class_list') }}">클래스</a>
+      <a href="{{ url_for('about') }}">소개</a>
+      {# 찜 목록과 찜한 개수. wish_count는 app.py가 모든 화면에 자동으로 넘겨 준다 #}
+      <a href="{{ url_for('wishlist') }}">찜 목록 ({{ wish_count }})</a>
+    </nav>
+  </header>
+
+  <main>
+    {# 이 빈칸을 홈 · 소개 · 인사 화면이 각자 채운다 #}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">© 2026 클래스로 마켓</footer>
+</body>
+</html>

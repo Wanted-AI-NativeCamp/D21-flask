@@ -1,0 +1,763 @@
+/* 자주 쓰는 값은 여기 한 곳에 모아 둔다. 바꾸고 싶으면 여기만 고치면 된다 */
+:root {
+  --text: #222;
+  --muted: #666;
+  --line: #ddd;
+  --link: #1a5fb4;
+  --accent: #c2410c;
+  --gap: 16px;
+  --space: 24px;
+  --radius: 8px;
+  --bg: #fff;
+  --page-width: 640px;
+}
+
+/* 화면 전체: 글꼴, 글자색, 가운데 정렬된 좁은 폭 (참고 화면과 같은 느낌) */
+body {
+  font-family: sans-serif;
+  color: var(--text);
+  max-width: var(--page-width);
+  margin: var(--space) auto;
+  padding: 0 var(--gap);
+  line-height: 1.6;
+  /* 주소에 아주 긴 이름을 넣어도 화면 밖으로 삐져나가지 않고 줄바꿈된다 */
+  overflow-wrap: anywhere;
+}
+
+/* 위쪽 영역: 서비스 이름(로고) 아래에 메뉴가 놓이고, 맨 아래에 주황색 1px 선 */
+.site-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-bottom: var(--gap);
+  border-bottom: 1px solid var(--accent);
+}
+
+/* 서비스 이름은 굵게, 밑줄 없이 */
+.brand {
+  font-weight: bold;
+  text-decoration: none;
+  color: var(--text);
+}
+
+/* 메뉴 묶음: 글자 링크들을 가로로 놓되, 자리가 모자라면 다음 줄로 넘어간다 */
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+}
+
+/* 메뉴 글자: 배경 없이 주황색 굵은 글씨, 밑줄 없음 (아래쪽 버튼들과 모양이 달라 보이게) */
+.site-header nav a {
+  color: var(--accent);
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* 마우스를 올리면 밑줄이 생겨서 누를 수 있는 글자임을 알려 준다 */
+.site-header nav a:hover {
+  text-decoration: underline;
+}
+/* 메뉴 밖의 일반 링크 색 */
+a {
+  color: var(--link);
+}
+
+/* 본문과 위·아래 사이 간격 */
+main {
+  padding: var(--space) 0;
+}
+
+/* 바닥 글씨: 작고 흐리게, 위에 얇은 선 */
+.site-footer {
+  padding-top: var(--gap);
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* ---- 클래스 목록 화면 ---- */
+
+/* 거르기 · 정렬 상자: 한 줄로 놓고, 좁으면 아래로 줄바꿈 */
+.filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--gap);
+  margin-bottom: var(--gap);
+}
+
+/* 선택 상자 이름표는 선택 상자 위에 작게 */
+.filter label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+/* 선택 상자와 버튼은 누르기 편하게 높이를 키운다 */
+.filter select,
+.filter button {
+  min-height: 40px;
+  font-size: 16px;
+}
+
+/* 적용하기 버튼: 주황 바탕에 흰 글씨 (메뉴 글자와 같은 색) */
+.filter button {
+  padding: 0 var(--gap);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+/* 카드 목록: 폭이 되는 만큼 칸을 나누어 놓는다 (점 모양 목록 표시는 뺀다) */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--gap);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 카드 한 장: 얇은 테두리와 둥근 모서리. position: relative는 아래의 "카드 전체 클릭" 기준점이다 */
+.card {
+  position: relative;
+  padding: var(--gap);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* 목록의 카드 제목 링크: 글자색은 본문과 같게, 밑줄은 없게 */
+.card h2 a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 제목 링크에 투명한 덮개(::after)를 씌워서 카드 어디를 눌러도 상세 화면으로 가게 한다 */
+.card h2 a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* 목록에서 카드에 마우스를 올리면 테두리가 진해지고 제목에 밑줄이 생긴다 */
+.cards .card:hover {
+  border-color: var(--text);
+}
+
+.cards .card:hover h2 a {
+  text-decoration: underline;
+}
+
+/* 키보드(Tab)로 카드 제목 링크에 가면 카드 전체에 주황 테두리를 둘러서, 카드 전체가 선택됐음을 보여 준다 */
+.cards .card:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 상세 화면의 제목(h1)도 카드 안에서는 위아래 간격을 줄인다 */
+.card h1 {
+  margin: 4px 0;
+}
+
+/* 카드 안의 문단은 위아래 간격을 줄인다 */
+.card p {
+  margin: 4px 0;
+}
+
+/* 카테고리 · 지역 줄은 작고 흐리게 */
+.card .meta {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* 클래스 이름은 본문보다 조금만 크게 */
+.card h2 {
+  margin: 4px 0;
+  font-size: 18px;
+}
+
+/* 흐린 글씨: 가격 문의, 아직 리뷰가 없어요, 취소선 정가 */
+.muted,
+.list-price {
+  color: var(--muted);
+}
+
+/* 정가 뒤에 판매가가 오므로 사이를 띄운다 */
+.list-price {
+  margin-right: 4px;
+}
+
+/* 홈의 카테고리 버튼들: 줄바꿈되며 나란히 놓인다 */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 버튼 한 개: 링크지만 버튼처럼 보이게 테두리를 준다 */
+.chip {
+  padding: 8px var(--gap);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* 마우스를 올리면 테두리가 진해진다 */
+.chip:hover {
+  border-color: var(--text);
+}
+
+/* ======== 클래스 목록 화면 (새 디자인) ========
+   위의 기본 스타일(헤더 · 본문 · 푸터 · 홈 · 상세)은 원래 그대로이고, 아래는 목록 화면에서만 쓰는 규칙이다 */
+
+/* 목록 화면의 포인트 색(블루)과 모양 값. 색을 바꾸고 싶으면 --point 한 줄만 고치면 된다 */
+:root {
+  --point: #0066cc;
+  --on-point: #fff;
+  --radius-lg: 16px;
+  --thumb-bg: #ececef;
+  --thumb-icon: #75757f;
+}
+
+/* 눈에는 안 보이고 스크린리더만 읽는 글자 (정렬 이름표, '정가', '평점' 같은 설명용) */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- 클래스 목록 화면 ---- */
+
+/* 현재 위치: '클래스로 › 클래스 보기' 한 줄 */
+.crumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.crumb a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.crumb h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+/* 카테고리 칩 줄: 가로로 밀어서 넘기고, 칩이 멈출 때 칸에 맞게 붙는다 */
+.chip-row {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 6px;
+}
+
+/* 칩 한 개: 알약 모양, 줄어들지 않고 글자 길이만큼의 폭 */
+.cat-chip {
+  flex: none;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 19px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 15px;
+  font-weight: 700;
+  text-decoration: none;
+  scroll-snap-align: start;
+}
+
+.cat-chip:hover {
+  border-color: var(--text);
+}
+
+/* 지금 고른 칩: 포인트 바탕에 흰 글씨 */
+.cat-chip[aria-current] {
+  border-color: var(--point);
+  background: var(--point);
+  color: var(--on-point);
+}
+
+/* 개수 · 보기 방식 · 정렬 줄: 자리가 모자라면 아래로 줄바꿈 */
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin: 12px 0 var(--gap);
+}
+
+/* 개수 글씨는 왼쪽에 두고 나머지는 오른쪽으로 민다 */
+.result-count {
+  margin: 0 auto 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* 보기 방식 버튼 묶음 */
+.view-switch {
+  display: flex;
+  gap: 4px;
+}
+
+/* 보기 방식 버튼 한 개: 44px 정사각형 동그라미 */
+.view-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: var(--muted);
+}
+
+.view-btn:hover {
+  background: var(--thumb-bg);
+}
+
+/* 지금 보고 있는 방식: 포인트 바탕에 흰 아이콘 */
+.view-btn[aria-current] {
+  background: var(--point);
+  color: var(--on-point);
+}
+
+/* 정렬 선택 상자 */
+.sort select {
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+}
+
+/* 클래스 목록: 점 모양 표시는 빼고, 맨 아래 떠 있는 버튼에 가리지 않게 아래 간격을 둔다 */
+.items {
+  margin: 0 0 56px;
+  padding: 0;
+  list-style: none;
+}
+
+/* 클래스 한 개: 테두리가 있는 둥근 카드. position: relative는 아래의 "카드 전체 클릭" 기준점이다 */
+.item {
+  position: relative;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+}
+
+/* 사진이 없을 때의 자리: 회색 바탕 가운데에 사진 그림 */
+.thumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 4 / 3;
+  border-radius: 12px;
+  background: var(--thumb-bg);
+  color: var(--thumb-icon);
+}
+
+.thumb svg {
+  width: 36%;
+  min-width: 28px;
+  max-width: 64px;
+  height: auto;
+}
+
+/* 이름 링크: 글자색은 본문과 같게, 밑줄은 없게 */
+.item-title {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.35;
+}
+
+.item-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* 이름 링크에 투명한 덮개(::after)를 씌워서 카드 어디를 눌러도 상세 화면으로 가게 한다 */
+.item-title a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-lg);
+}
+
+/* 카드에 마우스를 올리면 테두리가 진해지고 이름에 밑줄이 생긴다 */
+.item:hover {
+  border-color: var(--text);
+}
+
+.item:hover .item-title a {
+  text-decoration: underline;
+}
+
+/* 키보드(Tab)로 카드에 가면 카드 전체에 포인트 색 테두리를 둘러서, 카드 전체가 선택됐음을 보여 준다 */
+.item:focus-within {
+  outline: 2px solid var(--point);
+  outline-offset: 2px;
+}
+
+/* 카드 안의 문단 간격은 좁게 */
+.item p {
+  margin: 4px 0;
+}
+
+/* 카테고리 · 지역 줄은 작고 흐리게 */
+.item .meta {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* '자세히' 버튼은 타일형에서만 보인다. 카드 전체를 덮는 링크 위에 올려서 따로 눌리게 한다 */
+.btn-detail {
+  display: none;
+  position: relative;
+  z-index: 1;
+  align-items: center;
+  height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.btn-detail:hover {
+  border-color: var(--text);
+}
+
+/* 카드형: 큰 썸네일 아래에 글씨. 폭이 되는 만큼 칸을 나누어 놓는다 */
+.view-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: var(--gap);
+}
+
+.view-card .item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 리스트형: 왼쪽에 작은 썸네일, 오른쪽에 글씨와 가격 */
+.view-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.view-list .item {
+  display: grid;
+  grid-template-columns: 80px minmax(0, 1fr);
+  grid-template-areas: "thumb body" "thumb foot";
+  align-content: center;
+  gap: 0 12px;
+}
+
+.view-list .thumb {
+  grid-area: thumb;
+  align-self: center;
+  aspect-ratio: 1 / 1;
+}
+
+.view-list .item-body {
+  grid-area: body;
+}
+
+.view-list .item-foot {
+  grid-area: foot;
+}
+
+.view-list .item-title {
+  font-size: 16px;
+}
+
+/* 폭이 넉넉하면 가격을 오른쪽 끝으로 보낸다 */
+@media (min-width: 520px) {
+  .view-list .item {
+    grid-template-columns: 80px minmax(0, 1fr) auto;
+    grid-template-areas: "thumb body foot";
+    align-items: center;
+  }
+
+  .view-list .item-foot {
+    text-align: right;
+  }
+}
+
+/* 타일형: 정사각형 큰 썸네일, 큰 글씨, 아래에 가격과 '자세히' 버튼 */
+.view-tile {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: var(--gap);
+}
+
+.view-tile .item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.view-tile .thumb {
+  aspect-ratio: 1 / 1;
+}
+
+.view-tile .item-title {
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.view-tile .item-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.view-tile .btn-detail {
+  display: inline-flex;
+}
+
+/* 목록 가격: 판매가를 가장 굵게 */
+.item-price strong {
+  font-size: 17px;
+}
+
+/* 할인율은 포인트 색 굵은 글씨 */
+.pct {
+  margin-right: 4px;
+  color: var(--point);
+  font-weight: 800;
+}
+
+/* 평점 별은 포인트 색 */
+.star {
+  margin-right: 2px;
+  color: var(--point);
+}
+
+/* 목록에서는 정가 앞의 오른쪽 간격 대신 왼쪽 간격을 쓴다 */
+.item .list-price {
+  margin: 0 0 0 4px;
+}
+
+/* 사진이 있을 때: 칸을 가득 채우고 넘치는 부분은 잘라낸다 */
+.thumb {
+  overflow: hidden;
+}
+
+.thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ---- 상세 화면의 수강 후기 ---- */
+
+/* 후기 칸 묶음: 위쪽에 간격을 둔다 */
+.review-section {
+  margin-top: var(--space);
+}
+
+/* 칸 제목은 본문보다 조금만 크게 */
+.review-section h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+/* 폼: 칸들을 세로로 쌓는다 */
+.review-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+}
+
+/* 칸 하나: 이름표는 입력 칸 위에 작게 */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 14px;
+}
+
+/* 입력 칸 · 선택 상자 · 여러 줄 칸: 폭을 가득 채우고, 글자는 16px로 둔다 (휴대폰에서 눌렀을 때 화면이 확대되지 않는다) */
+.field input,
+.field select,
+.field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 16px;
+}
+
+/* 입력 칸 · 선택 상자의 높이는 누르기 편하게 44px 이상 */
+.field input,
+.field select {
+  min-height: 44px;
+}
+
+/* 여러 줄 칸은 세로로만 늘릴 수 있다 */
+.field textarea {
+  resize: vertical;
+}
+
+/* 키보드로 칸에 가면 주황 테두리로 어디에 있는지 보여 준다 */
+.field input:focus-visible,
+.field select:focus-visible,
+.field textarea:focus-visible,
+.review-form button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 저장 버튼: 주황 바탕에 흰 글씨 (목록의 적용하기 버튼과 같은 모양). 폼 안에서 왼쪽에 붙고 높이는 44px */
+.review-form button {
+  align-self: flex-start;
+  min-height: 44px;
+  padding: 0 var(--space);
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--accent);
+  color: var(--bg);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* 틀린 곳 안내: 왼쪽에 주황 선, 점 모양 목록 표시는 뺀다 */
+.form-errors {
+  margin: 0 0 var(--gap);
+  padding: 8px 12px;
+  border-left: 3px solid var(--accent);
+  list-style: none;
+}
+
+/* 저장 성공 안내: 틀린 곳 안내와 같은 모양이고, 왼쪽 선만 포인트 색(블루)이다 */
+.form-success {
+  margin: 0 0 var(--gap);
+  padding: 8px 12px;
+  border-left: 3px solid var(--point);
+}
+
+/* 후기 목록: 점 모양 표시는 빼고, 후기마다 얇은 테두리를 둘러 카드처럼 보이게 한다 */
+.reviews {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.review {
+  padding: 12px var(--gap);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+/* 후기 안의 문단 간격은 좁게 */
+.review p {
+  margin: 4px 0;
+}
+
+/* 후기 내용: 쓴 사람이 줄을 바꾼 곳은 그대로 보여 준다 */
+.review-body {
+  white-space: pre-line;
+}
+
+/* 후기가 없을 때의 안내 문구는 흐리게 */
+.empty {
+  color: var(--muted);
+}
+
+/* ---- 찜하기 ---- */
+
+/* 찜 버튼 상자: 카드 안, 평점 아래에 간격을 두고 놓는다 */
+.wish-form {
+  margin: 12px 0 0;
+}
+
+/* 찜 버튼: 테두리가 있는 둥근 버튼 (목록의 '자세히' 버튼과 같은 모양). 높이는 누르기 편하게 44px */
+.wish-btn {
+  /* 목록 카드 위에서는 카드 전체를 덮는 링크보다 위에 올려서 따로 눌리게 한다 */
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* 마우스를 올리면 테두리가 진해진다 */
+.wish-btn:hover {
+  border-color: var(--text);
+}
+
+/* 키보드로 버튼에 가면 주황 테두리로 어디에 있는지 보여 준다 */
+.wish-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 하트는 주황색 */
+.wish-heart {
+  color: var(--accent);
+}
+
+/* 찜 목록 카드의 오른쪽 아래: 가격 아래에 취소 버튼을 세로로 쌓는다 */
+.wish-items .item-foot {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* 카드 안에서는 버튼 상자의 위쪽 간격이 필요 없다 */
+.wish-items .wish-form {
+  margin: 0;
+}
+
+/* 폭이 넉넉하면 가격과 버튼을 오른쪽 끝에 맞춘다 */
+@media (min-width: 520px) {
+  .wish-items .item-foot {
+    align-items: flex-end;
+    margin-top: 0;
+  }
+}
